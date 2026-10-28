@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, afterNextRender, computed, inject, signal } from '@angular/core';
 import { OVEN } from '../core/content';
 import { Order, money, nowHours } from '../core/order';
+import { DragScroll } from '../shared/drag-scroll';
 import { Reveal } from '../shared/reveal';
 
 const clock = (h: number) => `${Math.floor(h)}:${String(Math.round((h % 1) * 60)).padStart(2, '0')}`;
@@ -9,7 +10,7 @@ const clock = (h: number) => `${Math.floor(h)}:${String(Math.round((h % 1) * 60)
 @Component({
   selector: 'app-oven',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Reveal],
+  imports: [Reveal, DragScroll],
   template: `
     <section class="section oven" id="horno">
       <div class="container">
@@ -21,7 +22,7 @@ const clock = (h: number) => `${Math.floor(h)}:${String(Math.round((h % 1) * 60)
 
         <div class="line" data-reveal [revealDelay]="160">
           <span class="rail" aria-hidden="true"><span class="fill" [style.transform]="'scaleX(' + progress() + ')'"></span></span>
-          <ol class="stops">
+          <ol class="stops" dragScroll>
             @for (o of oven; track o.name; let i = $index) {
               <li [class]="'stop ' + state(i)">
                 <span class="time">{{ o.label }}</span>
@@ -55,7 +56,7 @@ const clock = (h: number) => `${Math.floor(h)}:${String(Math.round((h % 1) * 60)
     .detail { margin-top: 6px; font-size: 0.95rem; opacity: 0.88; }
     .badge { align-self: flex-start; margin-top: 12px; padding: 3px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 800; background: color-mix(in oklch, var(--leche) 18%, transparent); }
     .grab { align-self: flex-start; margin-top: 12px; font-weight: 800; font-size: 0.9rem; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; transition: text-underline-offset 200ms var(--ease-out); }
-    .grab:hover { text-underline-offset: 7px; }
+    @media (hover: hover) and (pointer: fine) { .grab:hover { text-underline-offset: 7px; } }
     .grab:active { translate: 0 1px; }
     .stop.later .ph { filter: saturate(0.5); opacity: 0.7; }
     .stop.next .ph { box-shadow: 0 0 0 6px var(--mantequilla); }

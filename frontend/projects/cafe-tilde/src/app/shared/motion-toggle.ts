@@ -12,7 +12,7 @@ import { ChangeDetectionStrategy, Component, afterNextRender, signal } from '@an
   `,
   styles: `
     button { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; font-size: 0.82rem; color: inherit; opacity: 0.8; transition: opacity 200ms ease; }
-    button:hover { opacity: 1; }
+    @media (hover: hover) and (pointer: fine) { button:hover { opacity: 1; } }
     .track { position: relative; width: 34px; height: 20px; border-radius: 999px; background: currentColor; opacity: 0.35; transition: opacity 200ms ease; }
     .thumb { position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform 250ms cubic-bezier(0.23, 1, 0.32, 1); }
     [aria-checked='true'] .track { opacity: 1; }

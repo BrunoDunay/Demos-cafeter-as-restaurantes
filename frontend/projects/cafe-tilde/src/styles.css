@@ -260,3 +260,13 @@ p {
 .reduce-motion.js [data-reveal] {
   opacity: 1;
 }
+
+/* ===== Tacto (pulido con apple-design y emil-design-eng) =====
+   Carruseles que se arrastran con el mouse (shared/drag-scroll.ts) y paneles que se cierran
+   arrastrándolos (shared/swipe-dismiss.ts). */
+@media (hover: hover) and (pointer: fine) {
+  .drag-scroll { cursor: grab; }
+}
+.drag-scroll.is-dragging { cursor: grabbing; user-select: none; }
+.drag-scroll.is-dragging * { pointer-events: none; }
+.is-dragging { will-change: transform; }

@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { REVIEWS } from '../core/content';
+import { DragScroll } from '../shared/drag-scroll';
 import { Reveal } from '../shared/reveal';
 
 /** Reseñas escritas en vasos para llevar: el nombre con plumón y el pedido en la funda. */
 @Component({
   selector: 'app-reviews',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Reveal],
+  imports: [Reveal, DragScroll],
   template: `
     <section class="section reviews" id="opiniones">
       <div class="container">
@@ -16,7 +17,7 @@ import { Reveal } from '../shared/reveal';
           <p class="score" data-reveal [revealDelay]="120"><b>4.8</b> de 5 en Google, con 186 reseñas</p>
         </div>
       </div>
-      <ul class="shelf">
+      <ul class="shelf" dragScroll>
         @for (r of reviews; track r.name; let i = $index) {
           <li class="cup" data-reveal [revealDelay]="i * 70" [style.--t]="tilts[i % tilts.length] + 'deg'">
             <span class="lid" aria-hidden="true"></span>

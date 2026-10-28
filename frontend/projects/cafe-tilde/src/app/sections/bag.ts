@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, afterNextRender, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { Order, money, whatsappLink } from '../core/order';
 import { Icon } from '../shared/icon';
+import { SwipeDismiss } from '../shared/swipe-dismiss';
 
 /**
  * La bolsa: panel lateral con el pedido para llevar. Primero se arma (cantidades, nombre,
@@ -10,7 +11,7 @@ import { Icon } from '../shared/icon';
 @Component({
   selector: 'app-bag',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Icon],
+  imports: [Icon, SwipeDismiss],
   template: `
     @if (order.count() > 0 && !order.open()) {
       <button type="button" class="fab" [class.bump]="bumping()" (click)="order.open.set(true)">
@@ -22,7 +23,7 @@ import { Icon } from '../shared/icon';
     <p class="toast" [class.on]="toast()" aria-live="polite">{{ toast() ? 'Agregado: ' + order.last() : '' }}</p>
 
     <div class="scrim" [class.on]="order.open()" (click)="close()" aria-hidden="true"></div>
-    <aside class="panel" [class.on]="order.open()" role="dialog" aria-modal="true" aria-labelledby="bag-title" tabindex="-1" #panel [attr.aria-hidden]="!order.open()" [attr.inert]="order.open() ? null : ''">
+    <aside class="panel" swipeDismiss="x" (dismiss)="close()" [class.on]="order.open()" role="dialog" aria-modal="true" aria-labelledby="bag-title" tabindex="-1" #panel [attr.aria-hidden]="!order.open()" [attr.inert]="order.open() ? null : ''">
       <header>
         <h2 id="bag-title">{{ sent() ? 'Listo para mandar' : 'Tu bolsa' }}</h2>
         <button type="button" class="x" (click)="close()" aria-label="Cerrar la bolsa"><app-icon name="close" [size]="20" /></button>
@@ -111,13 +112,13 @@ import { Icon } from '../shared/icon';
     .toast { position: fixed; right: 18px; bottom: 86px; z-index: 45; margin: 0; padding: 8px 14px; border-radius: 10px; background: var(--leche); color: var(--cafe); font-weight: 700; font-size: 0.9rem; box-shadow: 0 10px 24px -12px var(--cafe); opacity: 0; translate: 0 6px; pointer-events: none; transition: opacity 200ms ease, translate 200ms var(--ease-out); }
     .toast.on { opacity: 1; translate: none; }
 
-    .scrim { position: fixed; inset: 0; z-index: 60; background: color-mix(in oklch, var(--cafe) 45%, transparent); opacity: 0; pointer-events: none; transition: opacity 300ms ease; }
-    .scrim.on { opacity: 1; pointer-events: auto; }
+    .scrim { position: fixed; inset: 0; z-index: 60; background: color-mix(in oklch, var(--cafe) 45%, transparent); opacity: 0; pointer-events: none; transition: opacity 220ms ease; }
+    .scrim.on { opacity: 1; pointer-events: auto; transition-duration: 320ms; }
     .panel {
       position: fixed; top: 0; right: 0; bottom: 0; z-index: 61; width: min(440px, 100%); padding: 22px 24px 28px; overflow-y: auto; background: var(--crema);
-      transform: translateX(100%); transition: transform 420ms var(--ease-drawer); outline: none; display: flex; flex-direction: column;
+      transform: translateX(100%); transition: transform 280ms var(--ease-drawer); outline: none; display: flex; flex-direction: column;
     }
-    .panel.on { transform: none; }
+    .panel.on { transform: none; transition-duration: 420ms; }
     header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 2px dashed var(--line); }
     h2 { font-size: 2.2rem; }
     .x { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: var(--crema-2); transition: transform 160ms var(--ease-out); }
@@ -126,8 +127,9 @@ import { Icon } from '../shared/icon';
     .lines li { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 12px; }
     .ln { font-weight: 700; }
     .qty { display: flex; align-items: center; gap: 2px; padding: 2px; border-radius: 10px; background: var(--leche); box-shadow: inset 0 0 0 1.5px var(--line); }
-    .qty button { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; }
-    .qty button:hover { background: var(--crema-2); }
+    .qty button { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; transition: background-color 200ms ease, transform 140ms var(--ease-out); }
+    @media (hover: hover) and (pointer: fine) { .qty button:hover { background: var(--crema-2); } }
+    .qty button:active { transform: scale(0.9); }
     .qty b { min-width: 20px; text-align: center; }
     .lp { min-width: 54px; text-align: right; font-variant-numeric: tabular-nums; }
     .total { display: flex; justify-content: space-between; align-items: baseline; margin-top: 16px; padding-top: 14px; border-top: 2px dashed var(--line); font-weight: 700; }
@@ -141,7 +143,8 @@ import { Icon } from '../shared/icon';
     input[aria-invalid='true'] { border-color: var(--jitomate-hondo); }
     em { font-style: normal; font-weight: 700; font-size: 0.85rem; color: var(--jitomate-hondo); }
     .times { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-    .times button { min-height: 42px; padding: 0 14px; border-radius: 999px; font-weight: 700; font-size: 0.92rem; box-shadow: inset 0 0 0 2px var(--line); transition: background-color 200ms ease, color 200ms ease; }
+    .times button { min-height: 42px; padding: 0 14px; border-radius: 999px; font-weight: 700; font-size: 0.92rem; box-shadow: inset 0 0 0 2px var(--line); transition: background-color 200ms ease, color 200ms ease, transform 140ms var(--ease-out); }
+    .times button:active { transform: scale(0.96); }
     .times button.on { background: var(--cafe); color: var(--crema); box-shadow: none; }
     .send { width: 100%; margin-top: 6px; }
     .pay { margin-top: 10px; text-align: center; font-size: 0.85rem; opacity: 0.75; }
@@ -162,6 +165,7 @@ import { Icon } from '../shared/icon';
     .note ul { list-style: none; margin: 10px 0 0; padding: 0; font-size: 0.88rem; font-weight: 700; display: grid; gap: 2px; }
     .when { margin-top: 10px; font-size: 0.82rem; font-weight: 800; }
     .ready { margin: 20px 0 14px; text-align: center; }
+    .back:active { opacity: 0.6; }
     .back { margin-top: 12px; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; align-self: center; }
   `,
 })

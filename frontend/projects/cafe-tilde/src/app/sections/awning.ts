@@ -62,7 +62,8 @@ import { Logo } from '../shared/logo';
     .count.has { background: var(--mantequilla); }
     .bag.bump { animation: bump 420ms var(--ease-out); }
     @keyframes bump { 35% { transform: translateY(-5px) rotate(-6deg); } }
-    .burger { display: none; place-items: center; width: 48px; height: 48px; border-radius: 14px; background: var(--crema-2); }
+    .burger { display: none; place-items: center; width: 48px; height: 48px; border-radius: 14px; background: var(--crema-2); transition: scale 160ms cubic-bezier(0.23, 1, 0.32, 1); }
+    .burger:active { scale: 0.94; }
 
     /* Toldo: rayas jitomate/crema y orilla ondulada (cada onda cae justo en una raya) */
     .valance {

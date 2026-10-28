@@ -122,7 +122,8 @@ interface Layer {
     .note { margin-top: 6px; color: var(--cafe-2); }
     .buy { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 20px; padding-top: 18px; border-top: 2px dashed var(--line); }
     .price { font-family: var(--font-display); font-size: 2rem; margin-right: auto; }
-    .reset { font-weight: 700; font-size: 0.9rem; text-decoration: underline; text-underline-offset: 4px; color: var(--cafe-soft); }
+    .reset { font-weight: 700; font-size: 0.9rem; text-decoration: underline; text-underline-offset: 4px; color: var(--cafe-soft); transition: scale 160ms cubic-bezier(0.23, 1, 0.32, 1); }
+    .reset:active { scale: 0.96; }
     .reset:disabled { opacity: 0.4; cursor: default; }
 
     @media (max-width: 900px) {

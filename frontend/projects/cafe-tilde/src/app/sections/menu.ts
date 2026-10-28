@@ -77,7 +77,7 @@ import { Reveal } from '../shared/reveal';
     .dots { flex: 1; min-width: 12px; height: 1px; border-bottom: 2px dotted color-mix(in oklch, var(--crema) 35%, transparent); translate: 0 4px; }
     .price { font-family: var(--font-display); font-size: 1.15rem; }
     .add { flex: none; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; color: var(--crema); box-shadow: inset 0 0 0 1.5px color-mix(in oklch, var(--crema) 60%, transparent); font-size: 0.85rem; transition: background-color 200ms ease, color 200ms ease, transform 160ms var(--ease-out); }
-    .add:hover { background: var(--crema); color: var(--pizarron); }
+    @media (hover: hover) and (pointer: fine) { .add:hover { background: var(--crema); color: var(--pizarron); } }
     .add:active { transform: scale(0.88); }
     .add.has { background: var(--mantequilla); color: var(--cafe); box-shadow: none; }
     .desc { margin-top: 2px; font-size: 0.88rem; font-style: italic; opacity: 0.72; }
