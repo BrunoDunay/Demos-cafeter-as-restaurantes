@@ -1,91 +1,74 @@
-import { ChangeDetectionStrategy, Component, afterNextRender, signal } from '@angular/core';
-import { openStatus } from '../core/order';
-import { Icon } from '../shared/icon';
+import { ChangeDetectionStrategy, Component, afterNextRender, inject, signal } from '@angular/core';
+import { Order, openStatus } from '../core/order';
+import { Scene, SceneTrigger, sceneForNow } from '../core/scene';
 
+/** Portada: una tarjeta impresa con la franja del toldo, junto a la foto fija del café. */
 @Component({
   selector: 'app-hero',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Icon],
+  imports: [SceneTrigger],
   template: `
-    <section class="hero" id="inicio">
-      <div class="container grid">
-        <div class="copy">
-          <span class="tag intro" style="--i: 0">Café de barrio en la Purísima</span>
-          <h1 class="title">
-            <span class="intro" style="--i: 1">Café de barrio,</span>
-            <span class="intro calm" style="--i: 2">sin prisa.</span>
-          </h1>
-          <p class="lead intro" style="--i: 3">
-            Tostamos los martes, horneamos desde las seis y la mesa de la ventana casi siempre está libre antes de las nueve. Quédate o llévatelo.
-          </p>
-          <div class="actions intro" style="--i: 4">
-            <a class="btn btn-jitomate" href="#taza">Arma tu taza <app-icon name="arrow-right" [size]="18" /></a>
-            <a class="link" href="#menu">Ver el pizarrón</a>
-          </div>
-          <p class="small intro" style="--i: 5">Leche de avena sin costo · Wifi que sí sirve · Se aceptan perros</p>
-        </div>
-
-        <div class="window intro" style="--i: 2">
-          <div class="arch">
-            <img src="media/hero.webp" srcset="media/hero-sm.webp 720w, media/hero.webp 1400w" sizes="(max-width: 900px) 86vw, 42vw"
-              alt="Barista sirviendo un café filtrado en la barra de Tilde" width="1400" height="1750" fetchpriority="high" />
-          </div>
-          <!-- Letrero colgante: muestra si está abierto con la hora real del visitante -->
-          <div class="sign" [class.flip]="!status().open" [attr.aria-label]="(status().open ? 'Abierto. ' : 'Cerrado. ') + status().line">
-            <span class="string" aria-hidden="true"></span>
-            <div class="plate" aria-hidden="true">
-              <span class="face front">Abierto</span>
-              <span class="face back">Cerrado</span>
-            </div>
-            <small aria-hidden="true">{{ status().line }}</small>
-          </div>
-          <span class="stamp" aria-hidden="true">tostado<br />los martes</span>
-        </div>
+    <section class="card" id="inicio" [scene]="now()">
+      <div class="stripe" aria-hidden="true">@for (b of bars; track $index) {<i></i>}</div>
+      <div class="body">
+        <p class="name" aria-label="Tilde">Tilde</p>
+        <h1>Café de barrio,<br />sin prisa.</h1>
+        <p class="lede">Tostamos los martes, el pan sale desde las 7:30 y los desayunos van hasta la una. En una casa de 1940 en la Purísima.</p>
+        <p class="state" [class.closed]="!status().open">{{ status().open ? 'Abierto ahora.' : 'Cerrado ahora.' }} {{ status().line }}.</p>
+        <button type="button" class="btn" (click)="start()">Pedir para llevar</button>
       </div>
+      <nav class="links" aria-label="Secciones">
+        <a href="#menu">Menú</a>
+        <a href="#horno">Pan del día</a>
+        <a href="#visita">Visítanos</a>
+      </nav>
     </section>
   `,
   styles: `
-    .hero { padding: clamp(130px, 15vw, 170px) 0 clamp(64px, 8vw, 110px); }
-    .grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: clamp(32px, 6vw, 90px); align-items: center; }
-    .intro { animation: rise 700ms var(--ease-out) both; animation-delay: calc(var(--i) * 70ms + 60ms); }
-    @keyframes rise { from { opacity: 0; translate: 0 18px; } }
-    .tag { color: var(--jitomate-hondo); }
-    .title { margin-top: 18px; font-size: clamp(3.4rem, 8.6vw, 7.6rem); line-height: 0.92; }
-    .title span { display: block; }
-    .calm { color: var(--jitomate); }
-    .lead { margin-top: 26px; max-width: 30ch; font-size: clamp(1.1rem, 1.6vw, 1.3rem); line-height: 1.5; }
-    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 22px; margin-top: 34px; }
-    .small { margin-top: 30px; font-size: 0.9rem; font-weight: 600; color: var(--cafe-soft); }
-
-    .window { position: relative; padding-top: 70px; }
-    .arch { aspect-ratio: 4 / 5; border-radius: 999px 999px 18px 18px; overflow: hidden; background: var(--crema-2); box-shadow: 0 0 0 10px var(--cafe), 0 0 0 14px var(--crema), 0 0 0 16px var(--cafe); }
-    .arch img { width: 100%; height: 100%; object-fit: cover; }
-
-    .sign { position: absolute; left: -26px; top: 0; display: flex; flex-direction: column; align-items: center; transform-origin: 50% 0; animation: sway 4.5s ease-in-out infinite; perspective: 600px; }
-    .string { width: 64px; height: 34px; border: 2px solid var(--cafe); border-bottom: 0; border-radius: 50% 50% 0 0 / 100% 100% 0 0; margin-bottom: -2px; }
-    .plate { position: relative; width: 150px; height: 58px; transform-style: preserve-3d; transition: transform 700ms var(--ease-in-out); }
-    .face { position: absolute; inset: 0; display: grid; place-items: center; border-radius: 10px; backface-visibility: hidden; font-family: var(--font-display); font-size: 1.6rem; box-shadow: 0 8px 18px -10px color-mix(in oklch, var(--cafe) 60%, transparent); }
-    .front { background: var(--menta); color: var(--menta-hondo); }
-    .back { background: var(--cafe); color: var(--crema); transform: rotateY(180deg); }
-    .sign.flip .plate { transform: rotateY(180deg); }
-    .sign small { margin-top: 8px; padding: 4px 10px; border-radius: 999px; background: var(--leche); font-size: 0.74rem; font-weight: 800; white-space: nowrap; }
-    @keyframes sway { 0%, 100% { rotate: -2.5deg; } 50% { rotate: 2.5deg; } }
-
-    .stamp { position: absolute; right: -14px; bottom: 34px; display: grid; place-items: center; width: 112px; height: 112px; border-radius: 50%; background: var(--mantequilla); font-family: var(--font-display); font-size: 1.08rem; line-height: 1.05; text-align: center; rotate: 12deg; box-shadow: 0 0 0 4px var(--crema), 0 0 0 6px var(--cafe); }
-
+    .card { display: flex; flex-direction: column; min-height: calc(100svh - 2 * var(--margin)); }
+    .stripe { flex: none; }
+    .body { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 48px var(--pad); }
+    .name { font-size: clamp(4.5rem, 10vw, 10rem); font-weight: 500; line-height: 0.85; letter-spacing: -0.06em; margin: 0 0 48px -0.04em; }
+    h1 { font-size: clamp(2.5rem, 3.6vw, 3.5rem); line-height: 1.02; }
+    .lede { max-width: 36ch; margin-top: 24px; }
+    .state { margin: 18px 0 32px; font-weight: 500; }
+    .state::before { content: ''; display: inline-block; width: 9px; height: 9px; margin-right: 10px; border-radius: 50%; background: #2f8a4c; vertical-align: 0.1em; }
+    .state.closed::before { background: var(--muted); }
+    .links { display: flex; gap: 28px; padding: 0 var(--pad) 28px; font-size: var(--step-small); font-weight: 500; }
+    .links a { padding-block: 8px; transition: opacity 200ms ease; }
+    @media (hover: hover) and (pointer: fine) { .links a:hover { opacity: 0.6; } }
+    .links a:active { opacity: 0.5; }
     @media (max-width: 900px) {
-      .grid { grid-template-columns: 1fr; }
-      .window { max-width: 440px; width: 100%; margin: 6px auto 0; }
-      .sign { left: -6px; }
-      .stamp { right: -4px; width: 96px; height: 96px; font-size: 0.95rem; }
+      .card { min-height: auto; margin-top: -24px; position: relative; background: var(--bg); }
+      .stripe { height: 40px; }
+      .body { padding: 40px 20px 32px; }
+      .name { margin-bottom: 28px; font-size: 24vw; }
+      h1 { font-size: 8.6vw; }
+      .btn { align-self: stretch; }
+      .links { padding: 0 20px 28px; flex-wrap: wrap; }
     }
   `,
 })
 export class Hero {
+  private readonly order = inject(Order);
+  private readonly scene = inject(Scene);
+  protected readonly bars = Array.from({ length: 40 });
   // En el prerender no se sabe la hora del visitante; se calcula ya en el navegador.
-  protected readonly status = signal({ open: true, line: 'Todos los días' });
+  protected readonly status = signal({ open: true, line: 'Abrimos los siete días' });
+  protected readonly now = signal('latte');
 
   constructor() {
-    afterNextRender(() => this.status.set(openStatus()));
+    afterNextRender(() => {
+      this.status.set(openStatus());
+      const s = sceneForNow();
+      this.now.set(s);
+      this.scene.img.set(s);
+    });
+  }
+
+  /** Abre la bolsa si ya hay algo; si no, lleva al menú. */
+  protected start() {
+    if (this.order.count() > 0) this.order.open.set(true);
+    else document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' });
   }
 }

@@ -1,74 +1,52 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, afterNextRender, computed, inject, signal } from '@angular/core';
 import { OVEN } from '../core/content';
 import { Order, money, nowHours } from '../core/order';
-import { DragScroll } from '../shared/drag-scroll';
 import { Reveal } from '../shared/reveal';
 
 const clock = (h: number) => `${Math.floor(h)}:${String(Math.round((h % 1) * 60)).padStart(2, '0')}`;
 
-/** Lo que sale del horno a lo largo del día, comparado con la hora real del visitante. */
+/**
+ * Lo único que rompe la media pantalla: el pan del día a todo lo ancho, comparado con la hora real
+ * de quien visita ("Son las 10:06. El rol de canela sale en 54 minutos").
+ */
 @Component({
   selector: 'app-oven',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Reveal, DragScroll],
+  imports: [Reveal],
   template: `
-    <section class="section oven" id="horno">
-      <div class="container">
-        <div class="head">
-          <span class="tag" data-reveal>Pan del día</span>
-          <h2 class="title" data-reveal [revealDelay]="60">¿Qué salió del horno?</h2>
-          <p class="now" data-reveal [revealDelay]="120" aria-live="polite">{{ sentence() }}</p>
-        </div>
-
-        <div class="line" data-reveal [revealDelay]="160">
-          <span class="rail" aria-hidden="true"><span class="fill" [style.transform]="'scaleX(' + progress() + ')'"></span></span>
-          <ol class="stops" dragScroll>
-            @for (o of oven; track o.name; let i = $index) {
-              <li [class]="'stop ' + state(i)">
-                <span class="time">{{ o.label }}</span>
-                <div class="ph"><img [src]="'media/' + o.img + '-sm.webp'" [alt]="o.name" width="720" height="720" loading="lazy" /></div>
-                <h3>{{ o.name }}</h3>
-                <p class="detail">{{ o.detail }}</p>
-                <span class="badge">{{ badge(i) }}</span>
-                <button type="button" class="grab" (click)="order.add(o.name, o.price)">Apartar uno · {{ money(o.price) }}</button>
-              </li>
-            }
-          </ol>
-        </div>
-      </div>
+    <section class="oven" id="horno" aria-labelledby="horno-t">
+      <h2 id="horno-t" class="now" data-reveal aria-live="polite">{{ sentence() }}</h2>
+      <ol class="bakes">
+        @for (o of oven; track o.name; let i = $index) {
+          <li [class]="state(i)" data-reveal [revealDelay]="i * 70">
+            <p class="t">{{ o.label }}</p>
+            <img [src]="'media/' + o.img + '-sm.webp'" [alt]="o.name" width="720" height="720" loading="lazy" />
+            <h3>{{ o.name }}</h3>
+            <p class="d">{{ o.detail }}</p>
+            <p class="s">{{ badge(i) }}</p>
+            <button type="button" class="link grab" (click)="order.add(o.name, o.price)">Apartar uno, {{ money(o.price) }}</button>
+          </li>
+        }
+      </ol>
     </section>
   `,
   styles: `
-    .oven { background: var(--jitomate); color: var(--leche); }
-    .head { display: grid; grid-template-columns: auto 1fr; grid-template-areas: 'tag tag' 'title now'; gap: 14px 40px; align-items: end; margin-bottom: 56px; }
-    .tag { grid-area: tag; color: var(--mantequilla); }
-    .title { grid-area: title; font-size: clamp(2.6rem, 6vw, 5rem); }
-    .now { grid-area: now; max-width: 36ch; justify-self: end; font-size: 1.15rem; font-weight: 600; }
-    .line { position: relative; }
-    .rail { position: absolute; left: 0; right: 0; top: 46px; height: 4px; border-radius: 4px; background: color-mix(in oklch, var(--leche) 25%, transparent); }
-    .fill { position: absolute; inset: 0; border-radius: inherit; background: var(--mantequilla); transform-origin: left; transition: transform 900ms var(--ease-out); }
-    .stops { position: relative; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 22px; }
-    .stop { display: flex; flex-direction: column; }
-    .time { align-self: flex-start; padding: 4px 12px; border-radius: 999px; background: var(--leche); color: var(--jitomate-hondo); font-family: var(--font-display); font-size: 1.15rem; }
-    .ph { width: 100%; aspect-ratio: 1; margin-top: 18px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 6px var(--leche); transition: box-shadow 300ms ease, scale 300ms var(--ease-out); }
-    .ph img { width: 100%; height: 100%; object-fit: cover; }
-    h3 { margin-top: 18px; font-size: 1.5rem; }
-    .detail { margin-top: 6px; font-size: 0.95rem; opacity: 0.88; }
-    .badge { align-self: flex-start; margin-top: 12px; padding: 3px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 800; background: color-mix(in oklch, var(--leche) 18%, transparent); }
-    .grab { align-self: flex-start; margin-top: 12px; font-weight: 800; font-size: 0.9rem; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; transition: text-underline-offset 200ms var(--ease-out); }
-    @media (hover: hover) and (pointer: fine) { .grab:hover { text-underline-offset: 7px; } }
-    .grab:active { translate: 0 1px; }
-    .stop.later .ph { filter: saturate(0.5); opacity: 0.7; }
-    .stop.next .ph { box-shadow: 0 0 0 6px var(--mantequilla); }
-    .stop.next .badge { background: var(--mantequilla); color: var(--cafe); }
-    .stop.out .badge { background: var(--leche); color: var(--jitomate-hondo); }
+    .oven { padding: var(--section) var(--pad); background: var(--night); color: var(--on-night); }
+    .now { max-width: 34ch; font-size: clamp(2rem, 3.4vw, 3.4rem); font-weight: 300; line-height: 1.05; letter-spacing: -0.035em; }
+    .bakes { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 28px; margin-top: 88px; }
+    li { display: flex; flex-direction: column; }
+    .t { font-size: var(--step-lead); font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+    img { width: 100%; aspect-ratio: 1; object-fit: cover; margin-top: 14px; transition: filter 400ms ease; }
+    .later img { filter: grayscale(1) brightness(0.8); }
+    h3 { margin-top: 16px; font-size: var(--step-lead); font-weight: 400; letter-spacing: -0.02em; }
+    .d { margin-top: 6px; font-size: var(--step-small); color: var(--on-night-muted); }
+    .s { margin-top: 12px; font-size: var(--step-small); font-weight: 500; }
+    .next .s { color: #8fb0ff; }
+    .grab { align-self: flex-start; margin-top: 10px; font-size: var(--step-small); }
     @media (max-width: 980px) {
-      .head { grid-template-columns: 1fr; grid-template-areas: 'tag' 'title' 'now'; }
-      .now { justify-self: start; }
-      .rail { display: none; }
-      .stops { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 62%; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px; scrollbar-width: none; }
-      .stops::-webkit-scrollbar { display: none; }
-      .stop { scroll-snap-align: start; }
+      .oven { padding-inline: 20px; }
+      .now { font-size: 7vw; }
+      .bakes { grid-template-columns: 1fr 1fr; gap: 40px 16px; margin-top: 56px; }
     }
   `,
 })
@@ -85,21 +63,15 @@ export class Oven {
     return i === -1 ? OVEN.length : i;
   });
 
-  protected readonly progress = computed(() => {
-    const first = OVEN[0].at;
-    const last = OVEN[OVEN.length - 1].at;
-    return Math.max(0, Math.min(1, (this.now() - first) / (last - first)));
-  });
-
   protected readonly sentence = computed(() => {
-    if (!this.ready()) return 'Desde las 7:30 sale algo nuevo cada par de horas.';
+    if (!this.ready()) return 'Desde las 7:30 sale algo del horno cada par de horas.';
     const h = this.now();
     const next = OVEN[this.nextIndex()];
     if (h < OVEN[0].at) return `Son las ${clock(h)}. Las conchas salen a las 7:30; el café ya está listo antes.`;
-    if (!next) return `Son las ${clock(h)}. Ya salió todo lo de hoy; lo que quede, se va con descuento después de las 19:00.`;
+    if (!next) return `Son las ${clock(h)}. Ya salió todo lo de hoy; lo que quede va con descuento después de las 19:00.`;
     const mins = Math.round((next.at - h) * 60);
     const wait = mins >= 60 ? `a las ${next.label}` : `en ${mins} minutos`;
-    return `Son las ${clock(h)}. ${next.name === 'Galletas de avena' ? 'Las galletas salen' : `${next.name} sale`} ${wait}.`;
+    return `Son las ${clock(h)}. ${next.name === 'Galletas de avena' ? 'Las galletas salen' : `El ${next.name.toLowerCase()} sale`} ${wait}.`;
   });
 
   constructor() {
