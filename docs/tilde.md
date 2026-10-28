@@ -5,36 +5,30 @@
 ## Concepto
 
 Café chiquito en una casa de 1940 del barrio de la Purísima: café tostado los martes, pan desde temprano y desayunos. Lema: "Café de barrio, sin prisa".
+El sitio es **la fachada del café**: toldo a rayas, letrero colgante, pizarrón, puerta de vidrio con el horario rotulado.
 
-Rediseño visual del 28 oct 2026 con la skill `design-taste-frontend`, dirección **"split stage"**. Sustituye al diseño anterior de "fachada ilustrada" (toldo, letrero, pizarrón, vasos y bolsa dibujados), que se sentía caricaturesco. Conserva el movimiento, pero con fotos en lugar de dibujos.
-
-**La idea:** media pantalla es una foto fija que sigue el día del café. Al abrir muestra lo que pasa a esa hora (conchas temprano, latte, desayuno, el salón por la tarde, galletas al final) y cambia con un fundido lento según la sección que se lee.
+Rediseño del 26 oct 2026 con skills (ui-ux-pro-max: cafetería → bloques de color con energía, café y crema, tipografía retro; frontend-design y emil-design-eng para composición y movimiento; humanizer para los textos).
 
 ## Identidad
 
-- **Paleta:** papel de piedra `#dfdedb`, superficie `#d3d2ce`, tinta `#26251e` y el azul añil de las fachadas `#2456d6` solo en los botones de pedir.
-- **Tipografía:** Work Sans (una sola familia), títulos ligeros (300).
-- **Único adorno:** la franja del toldo (barras de tinta y papel) arriba de la portada y antes del pie.
-- **Reglas de la skill:** esquinas rectas, sin líneas, sin sombras, sin degradados.
-- **Movimiento (Básico):** CSS + IntersectionObserver, sin GSAP.
+- **Logo:** "Tilde" en Abril Fatface con la virgulilla (~) como vapor sobre la "i".
+- **Paleta (OKLCH, en bloques):** crema, café tostado, jitomate, mantequilla, menta y verde pizarrón. Neutros teñidos hacia el café.
+- **Tipografías:** Abril Fatface (títulos) y Karla (texto).
+- **Botones:** teclas con borde inferior que se hunden al presionar.
+- **Movimiento:** CSS + IntersectionObserver (Básico). Nada de rebotes elásticos.
 
-## Secciones
+## Secciones (una sola página)
 
-1. **Escenario fijo** (`stage.ts` + `core/scene.ts`): la foto fija; cada sección declara su momento con `scene="..."`.
-2. **Portada** (`hero.ts`): franja del toldo, "Tilde" grande, el lema, si está abierto ahora y "Pedir para llevar".
-3. **Arma tu taza** (`builder.ts`): ingredientes como texto; la receta se ve como barra de proporciones con el nombre y precio de la bebida.
-4. **Menú** (`menu.ts`): lista completa con precio y botón para agregar a la bolsa.
-5. **Pan del día** (`oven.ts`, a todo lo ancho y en oscuro): "Son las 14:17. Las galletas salen a las 17:00." con la hora real, y los cinco horneados con su estado.
-6. **La casa de Fresno 27** (`place.ts`): un marco cuyas fotos cambian solas.
-7. **Los de siempre** (`reviews.ts`): reseñas como citas grandes.
-8. **Visítanos** (`visit.ts`): frase, foto chica, estado, enlaces y horario con el día de hoy marcado.
-9. **Pie** (`footer.ts`): media pantalla de foto y el menú en grande.
-10. **La bolsa** (`bag.ts`): panel lateral (se cierra deslizándolo) y comanda final con el botón de WhatsApp.
-
-## Revisión
-
-`lint.mjs` e `inspect.mjs`: 0 errores. Un aviso defendido: no hay video (el único clip libre de café era casero y bajaba la calidad).
+1. **Toldo:** barra crema con el toldo a rayas y orilla ondulada colgando (máscara CSS); se recoge al bajar. Botón de bolsa con contador.
+2. **Portada:** foto en ventana de arco y **letrero colgante "Abierto/Cerrado"** que se voltea según la hora real.
+3. **Arma tu taza:** eliges qué le pones al espresso (agua, leche, espuma, cacao, hielo), la taza se llena por capas (clip-path) y te dice cómo se llama la bebida y cuánto cuesta. Combinaciones raras salen como "Invento de la casa". Se agrega a la bolsa.
+4. **El pizarrón:** todo el menú escrito en gis, sin pestañas, con + en cada producto.
+5. **¿Qué salió del horno?:** horario del pan del día comparado con la hora real ("Son las 10:06. Rol de canela sale en 54 minutos").
+6. **El lugar:** tiras de fotos de cabina.
+7. **Reseñas en vasos para llevar** con el nombre escrito con plumón.
+8. **La puerta:** horario rotulado en el vidrio (el día de hoy resaltado), cómo llegar y datos.
+9. **La bolsa:** panel lateral con el pedido; al mandarlo se ve como una bolsa de papel con tu nombre y el botón para abrir WhatsApp. Botón flotante con el total cuando hay algo en la bolsa.
 
 ## Fotos
 
-24 fotos de Pexels con un toque cálido (`scripts/media-demos.mjs` del workspace de Demos, lista `tilde`).
+24 fotos de Pexels con un toque cálido (`frontend/scripts/media-demos.mjs`, lista `tilde`).

@@ -1,67 +1,80 @@
 import { ChangeDetectionStrategy, Component, afterNextRender, signal } from '@angular/core';
 import { CONTACT } from '../core/content';
-import { openStatus, whatsappLink } from '../core/order';
-import { SceneTrigger } from '../core/scene';
+import { openStatus } from '../core/order';
 import { Reveal } from '../shared/reveal';
 
-/** Cómo llegar: una frase, una foto chica y los datos; el horario con el día de hoy marcado. */
+/** La puerta del café: el horario rotulado en el vidrio y cómo llegar. */
 @Component({
   selector: 'app-visit',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Reveal, SceneTrigger],
+  imports: [Reveal],
   template: `
-    <section class="visit" id="visita" scene="mesas" aria-labelledby="visita-t">
-      <h2 class="visually-hidden" id="visita-t">Visítanos</h2>
-      <p class="say" data-reveal>Fresno 27, a media cuadra del jardín de la Purísima. Ven a quedarte, o pide por WhatsApp y pasa por él.</p>
-      <div class="row" data-reveal [revealDelay]="80">
-        <img src="media/barista-sm.webp" alt="Barista de Tilde sonriendo con un capuchino en la mano" width="720" height="1080" loading="lazy" />
-        <div>
-          <p class="q">¿Vienes hoy?</p>
-          <p class="state" [class.closed]="!status().open">{{ status().open ? 'Abierto ahora.' : 'Cerrado ahora.' }} {{ status().line }}.</p>
-          <p class="links">
-            <a class="link" [href]="maps" target="_blank" rel="noopener">Cómo llegar</a>
-            <a class="link" [href]="wa" target="_blank" rel="noopener">WhatsApp</a>
-            <a class="link" [href]="'https://www.instagram.com/' + c.instagram" target="_blank" rel="noopener">Instagram</a>
+    <section class="section visit" id="visita">
+      <div class="container grid">
+        <div class="door" data-reveal role="img" [attr.aria-label]="'Puerta de Tilde con el horario: ' + hoursText">
+          <div class="glass">
+            <p class="vinyl-name">Tilde</p>
+            <p class="vinyl-sub">café · pan · desayunos</p>
+            <ul class="vinyl-hours">
+              @for (h of contact.hours; track h.days; let i = $index) {
+                <li [class.today]="today() === i"><span>{{ h.days }}</span><span>{{ h.time }}</span></li>
+              }
+            </ul>
+            <p class="push">empuje</p>
+          </div>
+          <span class="handle" aria-hidden="true"></span>
+        </div>
+
+        <div class="copy">
+          <span class="tag" data-reveal>Visítanos</span>
+          <h2 class="title" data-reveal [revealDelay]="60">Fresno 27, a media cuadra del jardín.</h2>
+          <p class="state" data-reveal [revealDelay]="100" [class.closed]="!status().open">
+            <span class="dot" aria-hidden="true"></span>{{ status().open ? 'Abierto ahora.' : 'Cerrado ahora.' }} {{ status().line }}.
           </p>
-          <p class="where">{{ c.address }}, {{ c.city }}. {{ c.phone }}</p>
+          <p class="body" data-reveal [revealDelay]="140">
+            Si vienes del centro, camina por Madero hacia el jardín de la Purísima y da vuelta en Fresno. Hay lugar para bicis en la entrada y estacionamiento en la calle después de las 7 de la noche.
+          </p>
+          <dl class="facts" data-reveal [revealDelay]="180">
+            <div><dt>Dirección</dt><dd>{{ contact.address }}, {{ contact.city }}</dd></div>
+            <div><dt>Teléfono</dt><dd>{{ contact.phone }}</dd></div>
+            <div><dt>Instagram</dt><dd><a class="link" href="#">{{ '@' + contact.instagram }}</a></dd></div>
+          </dl>
         </div>
       </div>
-      <dl class="hours" data-reveal [revealDelay]="140">
-        @for (h of c.hours; track h.days; let i = $index) {
-          <div [class.today]="today() === i"><dt>{{ h.days }}{{ today() === i ? ', hoy' : '' }}</dt><dd>{{ h.time }}</dd></div>
-        }
-      </dl>
-      <p class="how" data-reveal [revealDelay]="180">Si vienes del centro, camina por Madero hacia el jardín y da vuelta en Fresno. Hay lugar para bicis en la entrada y estacionamiento en la calle después de las siete de la noche.</p>
     </section>
   `,
   styles: `
-    .visit { padding: var(--section) var(--pad); }
-    .say { max-width: 26ch; font-size: clamp(1.6rem, 2.3vw, 2.25rem); font-weight: 300; line-height: 1.15; letter-spacing: -0.03em; }
-    .row { display: grid; grid-template-columns: 150px 1fr; gap: 28px; align-items: start; margin-top: 56px; }
-    .row img { width: 150px; aspect-ratio: 1; object-fit: cover; }
-    .q { font-size: var(--step-lead); font-weight: 500; letter-spacing: -0.02em; }
-    .state { margin-top: 4px; }
-    .state::before { content: ''; display: inline-block; width: 9px; height: 9px; margin-right: 10px; border-radius: 50%; background: #2f8a4c; vertical-align: 0.1em; }
-    .state.closed::before { background: var(--muted); }
-    .links { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 14px; }
-    .where { margin-top: 14px; font-size: var(--step-small); color: var(--muted); }
-    .hours { display: grid; gap: 2px; max-width: 420px; margin-top: 56px; }
-    .hours div { display: flex; justify-content: space-between; gap: 20px; min-height: 40px; align-items: center; padding-inline: 14px; }
-    .hours .today { background: var(--surface); font-weight: 500; }
-    dd { font-variant-numeric: tabular-nums; }
-    .how { max-width: 46ch; margin-top: 32px; font-size: var(--step-small); }
-    @media (max-width: 900px) {
-      .visit { padding-inline: 20px; }
-      .say { font-size: 1.5rem; }
-      .row { grid-template-columns: 96px 1fr; gap: 18px; }
-      .row img { width: 96px; }
+    .visit { background: var(--cafe); color: var(--crema); }
+    .grid { display: grid; grid-template-columns: 0.75fr 1.25fr; gap: clamp(40px, 7vw, 110px); align-items: center; }
+    .door { position: relative; aspect-ratio: 5 / 9; max-width: 340px; width: 100%; margin-inline: auto; padding: 18px; border-radius: 160px 160px 10px 10px; background: oklch(42% 0.06 55); box-shadow: inset 0 0 0 6px oklch(34% 0.05 50); }
+    .glass {
+      height: 100%; border-radius: 142px 142px 4px 4px; padding: 64px 26px 26px; display: flex; flex-direction: column; align-items: center; text-align: center;
+      background: linear-gradient(160deg, oklch(36% 0.03 200 / 90%), oklch(24% 0.03 220) 55%, oklch(30% 0.03 200)); color: var(--leche);
+      box-shadow: inset 0 0 0 2px oklch(60% 0.03 200 / 30%);
     }
+    .vinyl-name { font-family: var(--font-display); font-size: 3.4rem; line-height: 1; }
+    .vinyl-sub { margin-top: 6px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.85; }
+    .vinyl-hours { list-style: none; margin: 34px 0 0; padding: 0; width: 100%; display: grid; gap: 8px; font-size: 0.9rem; font-weight: 700; }
+    .vinyl-hours li { display: flex; justify-content: space-between; gap: 10px; padding: 6px 10px; border-radius: 8px; }
+    .vinyl-hours li.today { background: var(--mantequilla); color: var(--cafe); }
+    .push { margin-top: auto; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.3em; text-transform: uppercase; opacity: 0.6; }
+    .handle { position: absolute; right: 32px; top: 52%; width: 10px; height: 70px; border-radius: 6px; background: var(--mantequilla); box-shadow: 0 4px 0 var(--mantequilla-hondo); }
+    .tag { color: var(--mantequilla); }
+    .title { margin-top: 14px; font-size: clamp(2.3rem, 4.6vw, 3.8rem); max-width: 16ch; color: var(--leche); }
+    .state { display: flex; align-items: center; gap: 10px; margin-top: 22px; font-weight: 800; font-size: 1.1rem; color: var(--menta); }
+    .state.closed { color: var(--crema-2); }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+    .body { margin-top: 16px; max-width: 48ch; font-size: 1.08rem; opacity: 0.9; }
+    .facts { margin: 30px 0 0; display: grid; gap: 14px; }
+    .facts div { display: grid; grid-template-columns: 110px 1fr; gap: 16px; padding-top: 14px; border-top: 1px solid color-mix(in oklch, var(--crema) 18%, transparent); }
+    dt { font-size: 0.78rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.6; padding-top: 3px; }
+    dd { margin: 0; font-weight: 600; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .door { max-width: 280px; } }
   `,
 })
 export class Visit {
-  protected readonly c = CONTACT;
-  protected readonly maps = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('Jardín de la Purísima, Aguascalientes')}`;
-  protected readonly wa = whatsappLink('¡Hola, Tilde! Quiero hacer un pedido para llevar.');
+  protected readonly contact = CONTACT;
+  protected readonly hoursText = CONTACT.hours.map((h) => `${h.days} ${h.time}`).join(', ');
   protected readonly status = signal({ open: true, line: 'Abrimos los siete días' });
   protected readonly today = signal(-1);
 

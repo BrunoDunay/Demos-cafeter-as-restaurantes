@@ -4,9 +4,9 @@ import { Icon } from '../shared/icon';
 import { SwipeDismiss } from '../shared/swipe-dismiss';
 
 /**
- * La bolsa: panel lateral con el pedido para llevar. Primero se arma (cantidades, nombre, hora);
- * al enviar se ve el pedido como comanda con tu nombre y el botón para abrir WhatsApp.
- * También incluye el botón fijo que aparece cuando ya hay algo en la bolsa.
+ * La bolsa: panel lateral con el pedido para llevar. Primero se arma (cantidades, nombre,
+ * hora); al enviar se ve como una bolsa de papel con tu nombre y el botón para abrir WhatsApp.
+ * También incluye el botón flotante que aparece cuando ya hay algo en la bolsa.
  */
 @Component({
   selector: 'app-bag',
@@ -15,7 +15,8 @@ import { SwipeDismiss } from '../shared/swipe-dismiss';
   template: `
     @if (order.count() > 0 && !order.open()) {
       <button type="button" class="fab" [class.bump]="bumping()" (click)="order.open.set(true)">
-        <span>Tu pedido · {{ money(order.total()) }}</span>
+        <app-icon name="bag" [size]="20" />
+        <span>Tu bolsa · {{ money(order.total()) }}</span>
         <b>{{ order.count() }}</b>
       </button>
     }
@@ -24,8 +25,8 @@ import { SwipeDismiss } from '../shared/swipe-dismiss';
     <div class="scrim" [class.on]="order.open()" (click)="close()" aria-hidden="true"></div>
     <aside class="panel" swipeDismiss="x" (dismiss)="close()" [class.on]="order.open()" role="dialog" aria-modal="true" aria-labelledby="bag-title" tabindex="-1" #panel [attr.aria-hidden]="!order.open()" [attr.inert]="order.open() ? null : ''">
       <header>
-        <h2 id="bag-title">{{ sent() ? 'Listo para mandar' : 'Tu pedido' }}</h2>
-        <button type="button" class="x" (click)="close()" aria-label="Cerrar el pedido"><app-icon name="close" [size]="20" /></button>
+        <h2 id="bag-title">{{ sent() ? 'Listo para mandar' : 'Tu bolsa' }}</h2>
+        <button type="button" class="x" (click)="close()" aria-label="Cerrar la bolsa"><app-icon name="close" [size]="20" /></button>
       </header>
 
       @if (!sent()) {
@@ -60,98 +61,112 @@ import { SwipeDismiss } from '../shared/swipe-dismiss';
               </div>
             </fieldset>
             <label class="field">
-              <span>Algo más (opcional)</span>
+              <span>Algo más <small>(opcional)</small></span>
               <input name="notas" placeholder="Leche de avena, extra caliente…" [value]="notes()" (input)="notes.set(val($event))" />
             </label>
-            <button class="btn send" type="submit">Mandar pedido</button>
+            <button class="btn btn-jitomate send" type="submit">Mandar pedido <app-icon name="arrow-right" [size]="18" /></button>
             <p class="pay">Pagas al recoger, en efectivo o con tarjeta.</p>
           </form>
         } @else {
           <div class="empty">
-            <p class="big">Todavía no hay nada.</p>
-            <p>Arma una taza o elige algo del menú.</p>
-            <a class="btn" href="#menu" (click)="close()">Ver el menú</a>
+            <svg viewBox="0 0 120 130" aria-hidden="true"><path d="M20 38h80l-6 86H26z" /><path d="M42 38V28a18 18 0 0 1 36 0v10" /><path class="fold" d="M20 38l8 10h64l8-10" /></svg>
+            <p>Tu bolsa está vacía.</p>
+            <p class="hint">Arma una taza o elige algo del pizarrón.</p>
+            <a class="btn btn-mantequilla" href="#taza" (click)="close()">Arma tu taza</a>
           </div>
         }
       } @else {
-        <div class="ticket">
-          <p class="for">{{ name().trim() }}</p>
-          <ul>
-            @for (l of order.lines(); track l.name) {
-              <li><span>{{ l.qty }} × {{ l.name }}</span><span>{{ money(l.qty * l.price) }}</span></li>
-            }
-          </ul>
-          <p class="when">Pasa {{ time().toLowerCase() }} · Total {{ money(order.total()) }}</p>
+        <div class="paper">
+          <svg class="bag-art" viewBox="0 0 260 300" aria-hidden="true">
+            <path class="kraft" d="M30 70h200l-12 222H42z" />
+            <path class="kraft-top" d="M30 70l16-26h168l16 26" />
+            <path class="seam" d="M30 70h200" />
+          </svg>
+          <div class="note">
+            <p class="for">Para: {{ name().trim() }}</p>
+            <ul>
+              @for (l of order.lines(); track l.name) {
+                <li>{{ l.qty }} × {{ l.name }}</li>
+              }
+            </ul>
+            <p class="when">Pasa {{ time().toLowerCase() }} · {{ money(order.total()) }}</p>
+          </div>
         </div>
         <p class="ready">Tu mensaje ya está escrito. Ábrelo en WhatsApp y mándalo; te confirmamos en unos minutos.</p>
-        <a class="btn send" [href]="link()" target="_blank" rel="noopener">Abrir WhatsApp</a>
-        <button type="button" class="link back" (click)="sent.set(false)">Cambiar algo</button>
+        <a class="btn btn-jitomate send" [href]="link()" target="_blank" rel="noopener">Abrir WhatsApp <app-icon name="arrow-up-right" [size]="18" /></a>
+        <button type="button" class="back" (click)="sent.set(false)">Cambiar algo</button>
       }
     </aside>
   `,
   styles: `
     .fab {
-      position: fixed; right: 16px; bottom: 16px; z-index: 45; display: inline-flex; align-items: center; gap: 14px; min-height: 56px; padding: 0 8px 0 20px;
-      background: var(--accent); color: var(--accent-ink); font-weight: 500;
-      animation: fab-in 300ms var(--ease-out); transition: scale 160ms var(--ease-out), background-color 200ms ease;
+      position: fixed; right: 18px; bottom: 18px; z-index: 45; display: inline-flex; align-items: center; gap: 10px; min-height: 56px; padding: 0 10px 0 18px;
+      border-radius: 16px; background: var(--cafe); color: var(--crema); font-weight: 800; box-shadow: 0 5px 0 oklch(18% 0.04 45), 0 18px 30px -12px color-mix(in oklch, var(--cafe) 60%, transparent);
+      animation: fab-in 300ms var(--ease-out); transition: transform 160ms var(--ease-out);
     }
-    @media (hover: hover) and (pointer: fine) { .fab:hover { background: #1b47b8; } }
-    .fab:active { scale: 0.97; }
-    .fab b { display: grid; place-items: center; min-width: 40px; height: 40px; background: var(--accent-ink); color: var(--accent); }
+    .fab:active { transform: translateY(3px); }
+    .fab b { display: grid; place-items: center; min-width: 32px; height: 32px; padding: 0 6px; border-radius: 10px; background: var(--mantequilla); color: var(--cafe); }
     .fab.bump { animation: bump 420ms var(--ease-out); }
     @keyframes fab-in { from { opacity: 0; translate: 0 16px; } }
-    @keyframes bump { 35% { translate: 0 -6px; } }
-    .toast { position: fixed; right: 16px; bottom: 84px; z-index: 45; padding: 10px 16px; background: var(--ink); color: var(--on-night); font-size: var(--step-small); opacity: 0; translate: 0 6px; pointer-events: none; transition: opacity 200ms ease, translate 200ms var(--ease-out); }
+    @keyframes bump { 35% { transform: translateY(-6px) rotate(-3deg); } }
+    .toast { position: fixed; right: 18px; bottom: 86px; z-index: 45; margin: 0; padding: 8px 14px; border-radius: 10px; background: var(--leche); color: var(--cafe); font-weight: 700; font-size: 0.9rem; box-shadow: 0 10px 24px -12px var(--cafe); opacity: 0; translate: 0 6px; pointer-events: none; transition: opacity 200ms ease, translate 200ms var(--ease-out); }
     .toast.on { opacity: 1; translate: none; }
 
-    .scrim { position: fixed; inset: 0; z-index: 60; background: rgb(38 37 30 / 45%); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 220ms ease, visibility 0s 220ms; }
-    .scrim.on { opacity: 1; visibility: visible; pointer-events: auto; transition: opacity 320ms ease; }
+    .scrim { position: fixed; inset: 0; z-index: 60; background: color-mix(in oklch, var(--cafe) 45%, transparent); opacity: 0; pointer-events: none; transition: opacity 220ms ease; }
+    .scrim.on { opacity: 1; pointer-events: auto; transition-duration: 320ms; }
     .panel {
-      position: fixed; top: 0; right: 0; bottom: 0; z-index: 61; width: min(460px, 100%); padding: 24px 28px 32px; overflow-y: auto; background: var(--bg);
-      transform: translateX(100%); visibility: hidden; transition: transform 280ms var(--ease-drawer), visibility 0s 280ms; outline: none; display: flex; flex-direction: column;
+      position: fixed; top: 0; right: 0; bottom: 0; z-index: 61; width: min(440px, 100%); padding: 22px 24px 28px; overflow-y: auto; background: var(--crema);
+      transform: translateX(100%); transition: transform 280ms var(--ease-drawer); outline: none; display: flex; flex-direction: column;
     }
-    .panel.on { transform: none; visibility: visible; transition: transform 420ms var(--ease-drawer); }
-    header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; }
-    h2 { font-size: var(--step-head); }
-    .x { display: grid; place-items: center; width: 44px; height: 44px; background: var(--surface); transition: scale 140ms var(--ease-out); }
-    .x:active { scale: 0.92; }
-    .lines { list-style: none; padding: 0; display: grid; gap: 8px; }
-    .lines li { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 14px; }
-    .ln { font-weight: 500; }
-    .qty { display: flex; align-items: center; background: var(--surface); }
-    .qty button { display: grid; place-items: center; width: 36px; height: 36px; transition: background-color 200ms ease, scale 140ms var(--ease-out); }
-    @media (hover: hover) and (pointer: fine) { .qty button:hover { background: #c9c8c3; } }
-    .qty button:active { scale: 0.9; }
-    .qty b { min-width: 22px; text-align: center; font-weight: 500; }
-    .lp { min-width: 56px; text-align: right; font-variant-numeric: tabular-nums; }
-    .total { display: flex; justify-content: space-between; align-items: baseline; margin-top: 28px; font-weight: 500; }
-    .total b { font-size: var(--step-lead); font-weight: 500; }
-    form { margin-top: 24px; }
-    .field { display: flex; flex-direction: column; gap: 8px; margin: 0 0 18px; padding: 0; border: 0; }
-    .field > span, legend { font-weight: 500; font-size: var(--step-small); padding: 0; }
-    input { min-height: 52px; padding: 0 14px; border: 0; border-radius: 0; background: var(--surface); font-size: 1rem; outline: 2px solid transparent; transition: outline-color 200ms ease; }
-    input:focus { outline-color: var(--accent); }
-    input[aria-invalid='true'] { outline-color: #b3261e; }
-    em { font-style: normal; font-weight: 500; font-size: var(--step-small); color: #b3261e; }
-    .times { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-    .times button { min-height: 42px; padding: 0 14px; background: var(--surface); font-size: var(--step-small); font-weight: 500; transition: background-color 200ms ease, color 200ms ease, scale 140ms var(--ease-out); }
-    .times button:active { scale: 0.96; }
-    .times button.on { background: var(--ink); color: var(--on-night); }
+    .panel.on { transform: none; transition-duration: 420ms; }
+    header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 2px dashed var(--line); }
+    h2 { font-size: 2.2rem; }
+    .x { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: var(--crema-2); transition: transform 160ms var(--ease-out); }
+    .x:active { transform: scale(0.94); }
+    .lines { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 10px; }
+    .lines li { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 12px; }
+    .ln { font-weight: 700; }
+    .qty { display: flex; align-items: center; gap: 2px; padding: 2px; border-radius: 10px; background: var(--leche); box-shadow: inset 0 0 0 1.5px var(--line); }
+    .qty button { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; transition: background-color 200ms ease, transform 140ms var(--ease-out); }
+    @media (hover: hover) and (pointer: fine) { .qty button:hover { background: var(--crema-2); } }
+    .qty button:active { transform: scale(0.9); }
+    .qty b { min-width: 20px; text-align: center; }
+    .lp { min-width: 54px; text-align: right; font-variant-numeric: tabular-nums; }
+    .total { display: flex; justify-content: space-between; align-items: baseline; margin-top: 16px; padding-top: 14px; border-top: 2px dashed var(--line); font-weight: 700; }
+    .total b { font-family: var(--font-display); font-weight: 400; font-size: 1.8rem; color: var(--jitomate-hondo); }
+    form { margin-top: 18px; }
+    .field { display: flex; flex-direction: column; gap: 8px; margin: 0 0 16px; padding: 0; border: 0; }
+    .field > span, legend { font-weight: 800; font-size: 0.92rem; padding: 0; }
+    small { font-weight: 500; opacity: 0.7; }
+    input { min-height: 50px; padding: 0 14px; border-radius: 12px; border: 2px solid var(--line); background: var(--leche); font-size: 1rem; transition: border-color 200ms ease; }
+    input:focus { outline: none; border-color: var(--jitomate); }
+    input[aria-invalid='true'] { border-color: var(--jitomate-hondo); }
+    em { font-style: normal; font-weight: 700; font-size: 0.85rem; color: var(--jitomate-hondo); }
+    .times { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .times button { min-height: 42px; padding: 0 14px; border-radius: 999px; font-weight: 700; font-size: 0.92rem; box-shadow: inset 0 0 0 2px var(--line); transition: background-color 200ms ease, color 200ms ease, transform 140ms var(--ease-out); }
+    .times button:active { transform: scale(0.96); }
+    .times button.on { background: var(--cafe); color: var(--crema); box-shadow: none; }
     .send { width: 100%; margin-top: 6px; }
-    .pay { margin-top: 10px; text-align: center; font-size: var(--step-small); color: var(--muted); }
-    .empty { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; margin: auto 0; padding: 40px 0; }
-    .big { font-size: var(--step-head); font-weight: 300; letter-spacing: -0.035em; line-height: 1; }
-    .empty .btn { margin-top: 14px; }
+    .pay { margin-top: 10px; text-align: center; font-size: 0.85rem; opacity: 0.75; }
+    .empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; margin: auto 0; padding: 40px 0; }
+    .empty svg { width: 110px; margin-bottom: 10px; fill: var(--crema-2); stroke: var(--cafe); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+    .empty .fold { fill: none; }
+    .empty p { font-family: var(--font-display); font-size: 1.6rem; }
+    .empty .hint { font-family: var(--font-body); font-size: 1rem; opacity: 0.8; margin-bottom: 14px; }
 
-    /* La comanda: el pedido escrito, como lo verá la barra */
-    .ticket { margin-top: 8px; padding: 28px 24px; background: var(--surface); animation: drop 450ms var(--ease-out); }
-    @keyframes drop { from { opacity: 0; translate: 0 -12px; } }
-    .for { font-size: var(--step-head); font-weight: 300; letter-spacing: -0.035em; line-height: 1; }
-    .ticket ul { list-style: none; padding: 0; margin-top: 18px; display: grid; gap: 6px; }
-    .ticket li { display: flex; justify-content: space-between; gap: 16px; }
-    .when { margin-top: 18px; font-weight: 500; }
-    .ready { margin: 22px 0 16px; }
-    .back { margin-top: 14px; align-self: center; }
+    .paper { position: relative; margin: 22px auto 0; width: min(300px, 100%); aspect-ratio: 260 / 300; animation: drop 500ms var(--ease-out); }
+    @keyframes drop { from { opacity: 0; translate: 0 -14px; rotate: -3deg; } }
+    .bag-art { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .kraft { fill: oklch(70% 0.075 65); }
+    .kraft-top { fill: oklch(62% 0.07 60); }
+    .seam { stroke: oklch(55% 0.06 55); stroke-width: 2; }
+    .note { position: absolute; left: 20%; right: 20%; top: 34%; color: var(--cafe); }
+    .for { font-family: var(--font-display); font-size: 1.5rem; rotate: -3deg; }
+    .note ul { list-style: none; margin: 10px 0 0; padding: 0; font-size: 0.88rem; font-weight: 700; display: grid; gap: 2px; }
+    .when { margin-top: 10px; font-size: 0.82rem; font-weight: 800; }
+    .ready { margin: 20px 0 14px; text-align: center; }
+    .back:active { opacity: 0.6; }
+    .back { margin-top: 12px; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; align-self: center; }
   `,
 })
 export class Bag {
@@ -180,7 +195,7 @@ export class Bag {
     const destroyRef = inject(DestroyRef);
     let toastTimer: ReturnType<typeof setTimeout> | undefined;
     let bumpTimer: ReturnType<typeof setTimeout> | undefined;
-    // Aviso breve y salto del botón cada vez que se agrega algo.
+    // Aviso breve y salto de la bolsa cada vez que se agrega algo.
     effect(() => {
       if (!this.order.bump()) return;
       this.toast.set(true);
